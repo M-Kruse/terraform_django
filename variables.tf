@@ -7,14 +7,10 @@ variable "ami_key_pair_name" {
   type = string
 }
 
-
-
 variable "app_name" {
   type = string
   description = "Name of your django app for naming related infrastructure."
 }
-
-# data "aws_availability_zones" "available" {}
 
 variable "azs" {
  type = "list"
@@ -26,10 +22,10 @@ variable "ec2_amis" {
   type        = "map"
 
   default = {
-    "us-east-1" = "ami-059eeca93cf09eebd"
-    "us-east-2" = "ami-0782e9ee97725263d"
-    "us-west-1" = "ami-0ad16744583f21877"
-    "us-west-2" = "ami-0e32ec5bc225539f5"
+    "us-east-1" = "ami-04763b3055de4860b"
+    "us-east-2" = "ami-0fb0129cd568fe35f"
+    "us-west-1" = "ami-0dd655843c87b6930"
+    "us-west-2" = "ami-06d51e91cea0dac8d"
   }
 }
 

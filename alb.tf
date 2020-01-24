@@ -2,7 +2,7 @@
 resource "aws_security_group" "django-app_alb_sg" {
   name        = "django-app-alb-sg"
   description = "allow incoming HTTP traffic only"
-  vpc_id      = "${aws_vpc.django-app.id}"
+  vpc_id      = aws_vpc.django-app.id
 
   ingress {
     protocol    = "tcp"
@@ -23,8 +23,8 @@ resource "aws_security_group" "django-app_alb_sg" {
 }
 
 # using ALB - instances in private subnets
-resource "aws_alb" "django-app-resume-dev-alb" {
-  name                      = "django-app-resume-dev-alb"
+resource "aws_alb" "django-app-dev-alb" {
+  name                      = "django-app-dev-alb"
   security_groups           = [aws_security_group.django-app_alb_sg.id]
   subnets                   = aws_subnet.private.*.id
   tags = {
@@ -33,39 +33,37 @@ resource "aws_alb" "django-app-resume-dev-alb" {
 }
 
 # alb target group
-resource "aws_alb_target_group" "django-app-resume-tg" {
-  name     = "django-app-resume-dev-alb-tg"
+resource "aws_alb_target_group" "django-app-dev-tg" {
+  name     = "django-app-dev-alb-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = "${aws_vpc.django-app.id}"
+  vpc_id   = aws_vpc.django-app.id
   health_check {
     path = "/"
     port = 80
   }
 }
 
-# listener
-resource "aws_alb_listener" "http_listener" {
-  load_balancer_arn = "${aws_alb.django-app-resume-dev-alb.arn}"
+#https://www.terraform.io/docs/providers/aws/r/lb_listener.html
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = "${aws_alb.django-app-dev-alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = "${aws_alb_target_group.django-app-resume-tg.arn}"
+    target_group_arn = "${aws_alb_target_group.django-app-dev-tg.arn}"
     type             = "forward"
   }
 }
 
-# target group attach
-# using nested interpolation functions and the count parameter to the "aws_alb_target_group_attachment"
+#https://www.terraform.io/docs/providers/aws/r/lb_target_group_attachment.html
 resource "aws_lb_target_group_attachment" "django-app" {
-  count            = "${length(var.azs)}"
-  target_group_arn = "${aws_alb_target_group.django-app-resume-tg.arn}"
-  target_id        =  "${element(split(",", join(",", aws_instance.django-app.*.id)), count.index)}"
+  count            = length(var.azs)
+  target_group_arn = aws_alb_target_group.django-app-dev-tg.arn
+  target_id        = element(split(",", join(",", aws_instance.django-app.*.id)), count.index)
   port             = 80
 }
 
-# ALB DNS is generated dynamically, return URL so that it can be used
 output "url" {
-  value = "http://${aws_alb.django-app-resume-dev-alb.dns_name}/"
+  value = "http://${aws_alb.django-app-dev-alb.dns_name}/"
 }

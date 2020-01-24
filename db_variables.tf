@@ -1,5 +1,3 @@
-# RDS - Postgres
-
 variable "rds_identifier" {
   default = "db"
 }
@@ -21,15 +19,15 @@ variable "rds_engine_version" {
 }
 
 variable "rds_db_name" {
-  default = "djangoappdev"
+  default = "rds_django_dev"
 }
 
 variable "rds_admin_user" {
-  default = "dbadmin"
+  default = "rds_django"
 }
 
 variable "rds_admin_password" {
-  default = "super_secret_password"
+  description = "Password for the RDS database admin user"
 }
 
 variable "rds_publicly_accessible" {
